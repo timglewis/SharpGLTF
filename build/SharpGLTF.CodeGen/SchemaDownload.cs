@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using LibGit2Sharp;
 
 namespace SharpGLTF
 {
@@ -9,16 +10,16 @@ namespace SharpGLTF
     /// </summary>
     static class SchemaDownload
     {
-        public static void Syncronize(string remoteUrl, string localDirectory)
+        public static void Syncronize(string remoteUrl, string remoteBranch, string localDirectory)
         {
             if (LibGit2Sharp.Repository.Discover(localDirectory) == null)
             {
                 Console.WriteLine($"Cloning {remoteUrl} can take several minutes; Please wait...");
 
-                LibGit2Sharp.Repository.Clone(remoteUrl, localDirectory);
+                LibGit2Sharp.Repository.Clone(remoteUrl, localDirectory, new CloneOptions() { BranchName = remoteBranch });
 
                 Console.WriteLine($"... Clone Completed");
-
+                
                 return;
             }
 
@@ -33,6 +34,7 @@ namespace SharpGLTF
 
                 Console.WriteLine($"{remoteUrl} is {r.Status}");
             }
+
         }
     }
 }
