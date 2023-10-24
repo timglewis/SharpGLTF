@@ -8,7 +8,10 @@ namespace SharpGLTF
     {
         #region root paths
 
-        public static string RemoteSchemaRepo = "https://github.com/KhronosGroup/glTF.git";
+        //public static string RemoteSchemaRepo = "https://github.com/KhronosGroup/glTF.git";
+        public static string RemoteSchemaRepo = "https://github.com/CesiumGS/glTF.git";
+
+        public static string RemoteSchemaBranch = "3d-tiles-next";
 
         /// <summary>
         /// Directory where the schema is downloaded and used as source
