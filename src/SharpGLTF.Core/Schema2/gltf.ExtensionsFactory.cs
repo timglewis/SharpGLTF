@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -51,6 +51,8 @@ namespace SharpGLTF.Schema2
             RegisterExtension<Node, AgiNodeStkMetadata>("AGI_stk_metadata");
 
             RegisterExtension<MeshPrimitive, CesiumPrimitiveOutline>("CESIUM_primitive_outline");
+            RegisterExtension<MeshPrimitive, MeshFeatures>("EXT_mesh_features");
+            RegisterExtension<ModelRoot, StructuralMetadata>("EXT_structural_metadata");
         }
 
         #endregion
