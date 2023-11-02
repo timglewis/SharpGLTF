@@ -1,6 +1,8 @@
-﻿using System.Numerics;
+﻿using System.Collections.Generic;
+using System.Numerics;
 
 using NUnit.Framework;
+using SharpGLTF.Geometry;
 
 namespace SharpGLTF.Schema2.Authoring
 {
@@ -243,7 +245,7 @@ namespace SharpGLTF.Schema2.Authoring
         }        
 
         [Test]
-        public void CrateSceneWithTextureTransformExtension()
+        public void CreateSceneWithTextureTransformExtension()
         {            
             TestContext.CurrentContext.AttachGltfValidatorLinks();
 
@@ -278,6 +280,49 @@ namespace SharpGLTF.Schema2.Authoring
             
             model.AttachToCurrentTest("result_glb.glb");
             model.AttachToCurrentTest("result_gltf.gltf");
+        }
+
+        [Test(Description = "Creates a mesh with mesh features")]
+        public void CreateSceneWithMeshFeaturesExtension()
+        {
+            TestContext.CurrentContext.AttachGltfValidatorLinks();
+
+            // create a basic scene
+            var model = ModelRoot.CreateModel();
+            var scene = model.UseScene("Default Scene");
+            var node = scene.CreateNode("Default Node");
+            var mesh = node.Mesh = model.CreateMesh("Triangle Mesh");
+
+            // first, create a default material
+            var material = model.CreateMaterial("Default Material")
+                .WithDoubleSide(true)
+                .WithPBRMetallicRoughness();
+
+            var positions = new[]
+            {
+                new Vector3(-10, 10, 0),
+                new Vector3(10, 10, 0),
+                new Vector3(10, -10, 0)
+            };
+
+            // define the triangle UV coordinates
+            var texCoords = new[]
+            {
+                new Vector2(1, 0),
+                new Vector2(0, 0),
+                new Vector2(0, 1)
+            };
+
+            List<uint> meshFeatures = new List<uint>() { 1, 2, 3 };
+
+            var primitive = mesh.CreatePrimitive()
+                .WithVertexAccessor("POSITION", positions)
+                .WithVertexAccessor("TEXCOORD_0", texCoords)
+                .WithMeshFeaturesAccessor(0, meshFeatures)
+                .WithMaterial(material);
+
+            model.AttachToCurrentTest("meshfeatures_gltf.gltf");
+            model.AttachToCurrentTest("meshfeatures_glb.glb");
         }
     }
 }

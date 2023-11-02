@@ -424,6 +424,16 @@ namespace SharpGLTF.Schema2
             throw new ArgumentException(expectedType.Name);
         }
 
+        public static MeshPrimitive WithMeshFeaturesAccessor(this MeshPrimitive primitive, int attribute, IReadOnlyList<uint> featureIds)
+        {
+            Guard.NotNull(primitive, nameof(primitive));
+            Guard.NotNull(featureIds, nameof(featureIds));
+
+            primitive.SetMeshFeatures(attribute, featureIds);
+                        
+            return primitive;
+        }
+
         #endregion
 
         #region material

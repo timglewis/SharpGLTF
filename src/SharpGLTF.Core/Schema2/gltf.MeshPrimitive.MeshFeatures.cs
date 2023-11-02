@@ -7,33 +7,20 @@ using SharpGLTF.Collections;
 namespace SharpGLTF.Schema2
 {
     [System.Diagnostics.DebuggerDisplay("{_DebuggerDisplay(),nq}")]
-    public partial class MeshFeatures 
+    internal partial class MeshFeatures 
     {
-        private MeshPrimitive meshPrimitive;
-        
+        #region lifecycle
+
         internal MeshFeatures(MeshPrimitive meshPrimitive)
         {
-            this.meshPrimitive = meshPrimitive;
+            _featureIds = new List<MeshFeatureFeatureId>();
         }
 
-        public Accessor FeatureIds
+        #endregion
+
+        public void SetFeatureIds(int attribute, int featureCount) 
         {
-            get
-            {
-                return _featureIds.HasValue
-                    ? meshPrimitive.LogicalParent.LogicalParent.LogicalAccessors[_featureIds.Value]
-                    : null;
-            }
-            set
-            {
-                if (value == null) { _indices = null; return; }
-                
-                meshPrimitive.
-
-                _ValidateAccessor(meshPrimitive.LogicalParent.LogicalParent, value);
-
-                _indices = value.LogicalIndex;
-            }
+            _featureIds.Add(new MeshFeatureFeatureId(attribute, featureCount));
         }
 
         internal static void _ValidateAccessor(ModelRoot model, Accessor accessor)
@@ -47,6 +34,17 @@ namespace SharpGLTF.Schema2
 
     }
 
+	partial class MeshFeatureFeatureId
+	{
+        public MeshFeatureFeatureId() { }
+        
+        public MeshFeatureFeatureId(int attribute, int count)
+        {
+            _attribute = attribute;
+            _featureCount = count;
+        }
+    }
+
     partial class MeshPrimitive
     {
         /// <summary>
@@ -54,35 +52,28 @@ namespace SharpGLTF.Schema2
         /// </summary>
         /// <param name="outlines">the list of vertex indices.</param>
         /// <param name="accessorName">the name of the accessor to be created.</param>
-        public void SetMeshFeatures(IReadOnlyList<ushort> featureIds, string accessorName = "Mesh Features")
+        public void SetMeshFeatures(int attribute, IReadOnlyList<uint> featureIds, string accessorName = "Mesh Features")
         {
             Guard.NotNull(featureIds, nameof(featureIds));
-
-            // create and fill data
-
-            var dstData = new Byte[featureIds.Count];
-            var dstArray = new Memory.IntegerArray(dstData, IndexEncodingType.UNSIGNED_BYTE);
-            for (int i = 0; i < featureIds.Count; ++i) { dstArray[i] = featureIds[i]; }
+            Guard.MustBeGreaterThanOrEqualTo(attribute, 0, nameof(attribute));
 
             var model = this.LogicalParent.LogicalParent;
 
-            var bview = model.UseBufferView(dstData);
+            var bview = model.CreateBufferView(4 * featureIds.Count, 4, BufferMode.ARRAY_BUFFER);
+
             var accessor = model.CreateAccessor(accessorName);
 
-            accessor.SetData(bview, 0, dstArray.Count, DimensionType.SCALAR, EncodingType.UNSIGNED_BYTE, false);
+            // create and fill data
+            var dstArray = new Memory.IntegerArray(bview.Content, 0, featureIds.Count, IndexEncodingType.UNSIGNED_BYTE);
+            for (int i = 0; i < featureIds.Count; ++i) { dstArray[i] = featureIds[i]; }
 
-            SetMeshFeatures(accessor);
-        }
+            accessor.SetData(bview, 0, featureIds.Count, DimensionType.SCALAR, EncodingType.UNSIGNED_BYTE, false);
 
-        public void SetMeshFeatures(Accessor accessor)
-        {
-            if (accessor == null) { RemoveExtensions<MeshFeatures>(); return; }
-
-            MeshFeatures._ValidateAccessor(this.LogicalParent.LogicalParent, accessor);
+            SetVertexAccessor($"_FEATURE_ID_{attribute}", accessor);
 
             var ext = UseExtension<MeshFeatures>();
-            ext.Indices = accessor;
+            
+            ext.SetFeatureIds(attribute, featureIds.Count);
         }
     }
-
 }
