@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 using NUnit.Framework;
@@ -313,13 +314,35 @@ namespace SharpGLTF.Schema2.Authoring
                 new Vector2(0, 1)
             };
 
-            List<uint> meshFeatures = new List<uint>() { 1, 2, 3 };
+            List<uint> meshFeatures = new List<uint>() { 0, 0, 0 };
 
             var primitive = mesh.CreatePrimitive()
                 .WithVertexAccessor("POSITION", positions)
                 .WithVertexAccessor("TEXCOORD_0", texCoords)
                 .WithMeshFeaturesAccessor(0, meshFeatures)
                 .WithMaterial(material);
+
+            // Add a structural metadata class
+            var schema = model.CreateSchema("KF", "KeyframeSchema", "1.0.0", "Keyframe Schema for Model Metadata");
+
+            var myClass = new StructuralMetadataClass("Door", "A Door Class")
+                 .WithString("id", "GUID for the Door")
+                 .WithString("type", "The Door type")
+                 .WithString("family", "The Door family")
+                 .WithInt32("elementId", "The element ID for the Door");
+
+            schema.AddClass("Door", myClass);
+
+            var myTable = model.CreatePropertyTable("DoorTable", "Door");
+
+            List<string> ids = new List<string>() { "1234", "5678", "9012", "3456" };
+            myTable.CreateStringProperty("id", ids);
+            List<string> types = new List<string>() { "Single Door", "Double Door", "Sliding Door", "Swinging Door" };
+            myTable.CreateStringProperty("type", types);
+            List<string> families = new List<string> { "Wooden Door", "Steel Door", "Glass Door", "Aluminum Door" };
+            myTable.CreateStringProperty("family", families);
+            List<int> elementIds = new List<int>() { 1465, 1466, 1467, 1468 };
+            myTable.CreateInt32Property("elementId", elementIds);
 
             model.AttachToCurrentTest("meshfeatures_gltf.gltf");
             model.AttachToCurrentTest("meshfeatures_glb.glb");

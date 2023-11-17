@@ -1,13 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-
-using SharpGLTF.Collections;
 
 namespace SharpGLTF.Schema2
 {
     [System.Diagnostics.DebuggerDisplay("{_DebuggerDisplay(),nq}")]
-    internal partial class MeshFeatures 
+    public partial class MeshFeatures 
     {
         #region lifecycle
 
@@ -18,9 +14,9 @@ namespace SharpGLTF.Schema2
 
         #endregion
 
-        public void SetFeatureIds(int attribute, int featureCount) 
+        public void SetFeatureIds(int featureCount) 
         {
-            _featureIds.Add(new MeshFeatureFeatureId(attribute, featureCount));
+            _featureIds.Add(new MeshFeatureFeatureId(featureCount));
         }
 
         internal static void _ValidateAccessor(ModelRoot model, Accessor accessor)
@@ -38,10 +34,9 @@ namespace SharpGLTF.Schema2
 	{
         public MeshFeatureFeatureId() { }
         
-        public MeshFeatureFeatureId(int attribute, int count)
+        public MeshFeatureFeatureId(int featureCount)
         {
-            _attribute = attribute;
-            _featureCount = count;
+            _featureCount = featureCount;
         }
     }
 
@@ -73,7 +68,7 @@ namespace SharpGLTF.Schema2
 
             var ext = UseExtension<MeshFeatures>();
             
-            ext.SetFeatureIds(attribute, featureIds.Count);
+            ext.SetFeatureIds(featureIds.Count);
         }
     }
 }

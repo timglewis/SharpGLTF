@@ -1,5 +1,5 @@
 @echo off
-set VERSIONSUFFIX=alpha0031
+set VERSIONSUFFIX=meshfeatures0001
 
 echo Building %VERSIONSUFFIX%
 
