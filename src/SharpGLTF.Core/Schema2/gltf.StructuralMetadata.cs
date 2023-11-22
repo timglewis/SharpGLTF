@@ -21,6 +21,7 @@ namespace SharpGLTF.Schema2
 
             return _schema;
         }
+
         public StructuralMetadataPropertyTable CreatePropertyTable(string name, string @class)
         {
             _propertyTables ??= new List<StructuralMetadataPropertyTable>();
@@ -33,8 +34,6 @@ namespace SharpGLTF.Schema2
         }
 
     }
-
-
 
     partial class ModelRoot
     {
