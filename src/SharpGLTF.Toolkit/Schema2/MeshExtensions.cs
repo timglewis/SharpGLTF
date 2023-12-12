@@ -424,12 +424,11 @@ namespace SharpGLTF.Schema2
             throw new ArgumentException(expectedType.Name);
         }
 
-        public static MeshPrimitive WithMeshFeaturesAccessor(this MeshPrimitive primitive, int attribute, IReadOnlyList<uint> featureIds)
+        public static MeshPrimitive WithMeshFeaturesAccessor(this MeshPrimitive primitive, int attribute, byte featureId, int propertyTable)
         {
             Guard.NotNull(primitive, nameof(primitive));
-            Guard.NotNull(featureIds, nameof(featureIds));
 
-            primitive.SetMeshFeatures(attribute, featureIds);
+            primitive.SetMeshFeatures(attribute, featureId, propertyTable);
                         
             return primitive;
         }

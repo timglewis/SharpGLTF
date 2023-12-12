@@ -14,9 +14,9 @@ namespace SharpGLTF.Schema2
 
         #endregion
 
-        public void SetFeatureIds(int featureCount) 
+        public void SetFeatureIds(int attribute, int featureCount, int propertyTable) 
         {
-            _featureIds.Add(new MeshFeatureFeatureId(featureCount));
+            _featureIds.Add(new MeshFeatureFeatureId(attribute, featureCount, propertyTable));
         }
 
         internal static void _ValidateAccessor(ModelRoot model, Accessor accessor)
@@ -34,41 +34,42 @@ namespace SharpGLTF.Schema2
 	{
         public MeshFeatureFeatureId() { }
         
-        public MeshFeatureFeatureId(int featureCount)
+        public MeshFeatureFeatureId(int attribute, int featureCount, int propertyTable)
         {
+            _attribute = attribute;
             _featureCount = featureCount;
+            _propertyTable = propertyTable;
         }
     }
 
     partial class MeshPrimitive
     {
         /// <summary>
-        /// Sets Cesium outline vertex indices
+        /// Creates a vertex accessor for Mesh Features
         /// </summary>
-        /// <param name="outlines">the list of vertex indices.</param>
-        /// <param name="accessorName">the name of the accessor to be created.</param>
-        public void SetMeshFeatures(int attribute, IReadOnlyList<uint> featureIds, string accessorName = "Mesh Features")
+        public void SetMeshFeatures(int attribute, byte featureId, int propertyTable)
         {
-            Guard.NotNull(featureIds, nameof(featureIds));
             Guard.MustBeGreaterThanOrEqualTo(attribute, 0, nameof(attribute));
 
             var model = this.LogicalParent.LogicalParent;
 
-            var bview = model.CreateBufferView(4 * featureIds.Count, 4, BufferMode.ARRAY_BUFFER);
+            int vertexCount = GetVertexAccessor("POSITION").Count;
 
-            var accessor = model.CreateAccessor(accessorName);
+            var bview = model.CreateBufferView(4 * vertexCount, 4, BufferMode.ARRAY_BUFFER);
+
+            var accessor = model.CreateAccessor("Mesh Features");
 
             // create and fill data
-            var dstArray = new Memory.IntegerArray(bview.Content, 0, featureIds.Count, IndexEncodingType.UNSIGNED_BYTE);
-            for (int i = 0; i < featureIds.Count; ++i) { dstArray[i] = featureIds[i]; }
+            var dstArray = new Memory.IntegerArray(bview.Content, 0, vertexCount, IndexEncodingType.UNSIGNED_BYTE);
+            for (int i = 0; i < vertexCount; ++i) { dstArray[i] = featureId; }
 
-            accessor.SetData(bview, 0, featureIds.Count, DimensionType.SCALAR, EncodingType.UNSIGNED_BYTE, false);
+            accessor.SetData(bview, 0, vertexCount, DimensionType.SCALAR, EncodingType.UNSIGNED_BYTE, false);
 
             SetVertexAccessor($"_FEATURE_ID_{attribute}", accessor);
 
             var ext = UseExtension<MeshFeatures>();
             
-            ext.SetFeatureIds(featureIds.Count);
+            ext.SetFeatureIds(attribute, 1, propertyTable);
         }
     }
 }

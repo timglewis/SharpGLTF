@@ -30,6 +30,8 @@ namespace SharpGLTF.Schema2
 
             _propertyTables.Add(table);
 
+            table.Index = _propertyTables.Count - 1;
+
             return table;
         }
 

@@ -306,22 +306,6 @@ namespace SharpGLTF.Schema2.Authoring
                 new Vector3(10, -10, 0)
             };
 
-            // define the triangle UV coordinates
-            var texCoords = new[]
-            {
-                new Vector2(1, 0),
-                new Vector2(0, 0),
-                new Vector2(0, 1)
-            };
-
-            List<uint> meshFeatures = new List<uint>() { 0, 0, 0 };
-
-            var primitive = mesh.CreatePrimitive()
-                .WithVertexAccessor("POSITION", positions)
-                .WithVertexAccessor("TEXCOORD_0", texCoords)
-                .WithMeshFeaturesAccessor(0, meshFeatures)
-                .WithMaterial(material);
-
             // Add a structural metadata class
             var schema = model.CreateSchema("KF", "KeyframeSchema", "1.0.0", "Keyframe Schema for Model Metadata");
 
@@ -342,7 +326,12 @@ namespace SharpGLTF.Schema2.Authoring
             List<string> families = new List<string> { "Wooden Door", "Steel Door", "Glass Door", "Aluminum Door" };
             myTable.CreateStringProperty("family", families);
             List<int> elementIds = new List<int>() { 1465, 1466, 1467, 1468 };
-            myTable.CreateInt32Property("elementId", elementIds);
+            myTable.CreateProperty("elementId", elementIds);
+
+            var primitive = mesh.CreatePrimitive()
+                .WithVertexAccessor("POSITION", positions)
+                .WithMeshFeaturesAccessor(0, 0, myTable.Index)
+                .WithMaterial(material);
 
             model.AttachToCurrentTest("meshfeatures_gltf.gltf");
             model.AttachToCurrentTest("meshfeatures_glb.glb");

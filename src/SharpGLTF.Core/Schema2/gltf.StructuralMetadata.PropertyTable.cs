@@ -4,11 +4,15 @@ using System.Data;
 using System.Linq;
 using System.Text;
 
+using System.Runtime.InteropServices;
+using System.Net.Http;
+
 namespace SharpGLTF.Schema2
 {
     public partial class StructuralMetadataPropertyTable 
     {
         public ModelRoot _root;
+        public int Index { get; set; }
 
         public StructuralMetadataPropertyTable()
         {
@@ -24,6 +28,23 @@ namespace SharpGLTF.Schema2
             _count = 0;
         }
 
+        public void CreateProperty<T>(string name, List<T> entries) where T : struct
+        {
+            int intBufLen = Marshal.SizeOf(typeof(T)) * entries.Count;
+            byte[] byteArray = new byte[intBufLen];
+
+            System.Buffer.BlockCopy(entries.ToArray(), 0, byteArray, 0, byteArray.Length);
+
+            BufferView intBuf = _root.UseBufferView(byteArray);
+            intBuf.Name = name + ".values";
+
+            StructuralMetadataPropertyTableProperty property = new StructuralMetadataPropertyTableProperty();
+            
+            property.AddProperty(intBuf.LogicalIndex);
+
+            _AddProperty(name, property);
+        }
+
         public void CreateStringProperty(string name, List<string> entries)
         {
             // Create the buffer to house the offset array and the string buffer
@@ -32,7 +53,7 @@ namespace SharpGLTF.Schema2
             {
                 stringBufLen += Encoding.UTF8.GetByteCount(entries[i]);
             }
-            int offsetBufLen = sizeof(uint) * entries.Count;
+            int offsetBufLen = sizeof(UInt16) * entries.Count;
             int bufLen = stringBufLen + offsetBufLen;
 
             Buffer buffer = _root.CreateBuffer(bufLen);
@@ -44,7 +65,7 @@ namespace SharpGLTF.Schema2
             stringBuf.Name = name + ".values";
 
             // Copy the string offsets and content into the buffer
-            Memory.IntegerArray offsetArray = new Memory.IntegerArray(offsetBuf.Content, 0, entries.Count, IndexEncodingType.UNSIGNED_INT);
+            Memory.IntegerArray offsetArray = new Memory.IntegerArray(offsetBuf.Content, 0, entries.Count, IndexEncodingType.UNSIGNED_SHORT);
             int offset = 0;
             for (int i = 0; i < entries.Count; ++i) 
             {
@@ -54,14 +75,15 @@ namespace SharpGLTF.Schema2
             }
 
             StructuralMetadataPropertyTableProperty property = new StructuralMetadataPropertyTableProperty();
-            property.AddStringProperty(stringBuf.LogicalIndex, offsetBuf.LogicalIndex, OffsetType.UINT32);
+            property.AddStringProperty(stringBuf.LogicalIndex, offsetBuf.LogicalIndex, OffsetType.UINT16);
 
-            AddProperty(name, property);
+            _AddProperty(name, property);
         }
 
-        public void CreateInt32Property(string name, List<int> entries)
+/*
+        public void CreateInt32Property(string name, List<Int32> entries)
         {
-            int intBufLen = sizeof(int) * entries.Count;
+            int intBufLen = sizeof(Int32) * entries.Count;
 
             BufferView intBuf = _root.UseBufferView(entries.SelectMany(BitConverter.GetBytes).ToArray(), 0, intBufLen);
             intBuf.Name = name + ".values";
@@ -70,10 +92,10 @@ namespace SharpGLTF.Schema2
             
             property.AddProperty(intBuf.LogicalIndex);
 
-            AddProperty(name, property);
+            _AddProperty(name, property);
         }
-
-        public void AddProperty(string propertyKey, StructuralMetadataPropertyTableProperty property)
+*/
+        private void _AddProperty(string propertyKey, StructuralMetadataPropertyTableProperty property)
         {
             _properties ??= new Dictionary<String, StructuralMetadataPropertyTableProperty>();
 
@@ -97,6 +119,13 @@ namespace SharpGLTF.Schema2
             _values = values;
             _stringOffsets = offsets;
             _stringOffsetType = offsetType;
+        }
+
+        public void AddArrayProperty(int values, int offsets, OffsetType offsetType)
+        {
+            _values = values;
+            _arrayOffsets = offsets;
+            _arrayOffsetType = offsetType;
         }
     }
 
